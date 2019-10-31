@@ -1,0 +1,17 @@
+{{- $g := . -}}
+{{- $releaseName := .Release.Name -}}
+{{- range .Values.services }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "webapp.fullname" $g }}-{{ .name }}
+  labels:
+{{ include "webapp.labels" $g | indent 4 }}
+spec:
+  type: {{ .type }}
+  ports:
+    {{- toYaml .ports | nindent 4 }}
+  selector:
+    app.kubernetes.io/name: {{ include "webapp.name" $g }}
+    app.kubernetes.io/instance: {{ $releaseName }}
+{{- end }}

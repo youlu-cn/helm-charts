@@ -1,0 +1,16 @@
+{{- $service := index .Values.services 0 -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "webapp.fullname" . }}-test-connection"
+  labels:
+{{ include "webapp.labels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args:  ['{{ include "webapp.fullname" . }}-{{ $service.name }}:{{ (index $service.ports 0).port }}']
+  restartPolicy: Never

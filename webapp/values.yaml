@@ -1,0 +1,81 @@
+# Default values for webapp.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: registry-secret
+
+nameOverride: "demo"
+fullnameOverride: "demo-webapp"
+
+container:
+  ports:
+    - name: pod-port
+      containerPort: 80
+      protocol: TCP
+  livenessProbe:
+    type: http
+    delaySeconds: 15
+    probe:
+      path: /
+      port: pod-port
+  readinessProbe:
+    type: http
+    delaySeconds: 15
+    probe:
+      path: /
+      port: pod-port
+  # Required Kubernetes >= v1.17
+  startupProbe:
+    type: tcp
+    probe:
+      port: pod-port
+
+services:
+  - name: http-service
+    type: ClusterIP
+    ports:
+      - name: service-port
+        port: 80
+        targetPort: pod-port
+        protocol: TCP
+
+ingress:
+  - name: demo-ingress
+    inner: false
+    grpc: false
+    hosts:
+      - host: www.test.com
+        paths:
+          - path: "/"
+            serviceName: http-service
+            servicePort: service-port
+    tls: []
+#      - secretName: test.com
+#        hosts:
+#          - www.test.com
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: "0"
+    memory: "0"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
